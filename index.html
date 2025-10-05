@@ -27,6 +27,7 @@
             <div>
             <button onclick="login()">Login</button>
             <button onclick="getDashboard()">Get Dashboard</button>
+            <button onclick="goToSettings()">Go to Settings</button>
             </div>
     </div>
 
@@ -58,6 +59,37 @@
                 } 
             });
         }
+
+        function goToSettings() {
+            const token = localStorage.getItem('jwt');
+            axios.get('/api/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(res => {
+                if (res && res.data && res.data.success) {
+                document.body.innerHTML = `
+                    <h1>Settings</h1>
+                    <p>${res.data.myContent}</p>
+                    <button onclick="getDashboard()">Back to Dashboard</button>
+                `;
+                history.pushState({}, '', '/settings');
+                }
+            })
+            .catch(err => {
+                if (err.response && err.response.status === 401) {
+                localStorage.removeItem('jwt');
+                window.location.href = '/';
+                }
+            });
+        }
+
+        window.onpopstate = () => {
+            if (location.pathname === '/') {
+            window.location.reload();
+            } else if (location.pathname === '/dashboard') {
+            getDashboard();
+            } else if (location.pathname === '/settings') {
+            goToSettings();
+            }
+        };
     </script>
 </body>
 </html>
